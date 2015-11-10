@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -46,9 +47,11 @@ import global.Log;
  * All the above disadvantages, for all we know, come with <em>no</em> discernible gain.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@WebAppConfiguration @ContextConfiguration
+@WebAppConfiguration
+@ContextConfiguration(classes = WebAppContextMockitoTest.WebAppConfig.class)
 public final class WebAppContextMockitoTest {
-	@Configuration @ComponentScan
+	@Configuration
+	@ComponentScan(excludeFilters = @ComponentScan.Filter(value = Configuration.class, type = FilterType.ANNOTATION))
 	static class WebAppConfig {
 		@Bean
 		RequestService requestService() {
@@ -112,6 +115,7 @@ public final class WebAppContextMockitoTest {
 		mockMvc.perform(post("/comment/{uuid}", "123"))
 				.andExpect(status().isOk())
 				.andExpect(view().name("comment"));
+		Log.log();
 	}
 
 	//	@Test
@@ -121,5 +125,6 @@ public final class WebAppContextMockitoTest {
 		mockMvc.perform(post("/comment/{uuid}", "123"))
 				.andExpect(status().isOk())
 				.andExpect(view().name("ok"));
+		Log.log();
 	}
 }

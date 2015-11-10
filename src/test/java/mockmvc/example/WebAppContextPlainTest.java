@@ -26,7 +26,8 @@ import global.Log;
  * {@link MockMvcBuilders#standaloneSetup(Object...)}.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@WebAppConfiguration @ContextConfiguration
+@WebAppConfiguration
+@ContextConfiguration(classes = WebAppContextPlainTest.WebAppConfig.class)
 public final class WebAppContextPlainTest {
 	@Configuration
 	static class WebAppConfig {

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -31,9 +32,11 @@ import mockit.Expectations;
  * {@link MockMvcBuilders#standaloneSetup(Object...)}.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@WebAppConfiguration @ContextConfiguration
+@WebAppConfiguration
+@ContextConfiguration(classes = WebAppContextJMockitTest.WebAppConfig.class)
 public final class WebAppContextJMockitTest {
-	@Configuration @ComponentScan
+	@Configuration
+	@ComponentScan(excludeFilters = @ComponentScan.Filter(value = Configuration.class, type = FilterType.ANNOTATION))
 	static class WebAppConfig {
 		@Bean
 		RequestService requestService() {
@@ -41,6 +44,7 @@ public final class WebAppContextJMockitTest {
 			return new RequestService() {
 				@Override
 				public RequestComment getRequestCommentByUUID(String uuid) {
+					Log.append("grc");
 					return null;
 				}
 			};
@@ -91,7 +95,7 @@ public final class WebAppContextJMockitTest {
 		Log.log();
 	}
 
-	//	@Test
+//	@Test
 	public void saveCommentWhenThereIsAFormError() throws Exception {
 		new Expectations() {{
 			requestService.getRequestCommentByUUID("123");
@@ -109,6 +113,7 @@ public final class WebAppContextJMockitTest {
 		mockMvc.perform(post("/comment/{uuid}", "123"))
 				.andExpect(status().isOk())
 				.andExpect(view().name("comment"));
+		Log.log();
 	}
 
 	//	@Test
@@ -121,5 +126,6 @@ public final class WebAppContextJMockitTest {
 		mockMvc.perform(post("/comment/{uuid}", "123"))
 				.andExpect(status().isOk())
 				.andExpect(view().name("ok"));
+		Log.log();
 	}
 }

@@ -1,15 +1,21 @@
 package mockmvc.example;
 
-import org.junit.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import mockit.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.Errors;
 
-import org.springframework.test.web.servlet.*;
-import org.springframework.test.web.servlet.setup.*;
-import org.springframework.validation.*;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import global.Log;
+import mockit.Delegate;
+import mockit.Expectations;
+import mockit.Injectable;
+import mockit.Tested;
 
 public final class StandaloneJMockitTest {
 	@Injectable
@@ -19,6 +25,11 @@ public final class StandaloneJMockitTest {
 	@Tested(availableDuringSetup = true)
 	CommentController commentController;
 	MockMvc mockMvc;
+
+	@BeforeClass
+	public static  void setupLog() {
+		Log.init("StandaloneJMockitTest");
+	}
 
 	@Before
 	public void setup() {
@@ -39,9 +50,10 @@ public final class StandaloneJMockitTest {
 		mockMvc.perform(post("/comment/{uuid}", "123"))
 				.andExpect(status().isFound())
 				.andExpect(view().name("redirect:/dashboard"));
+		Log.log();
 	}
 
-	@Test
+	//	@Test
 	public void saveCommentWhenThereIsAFormError() throws Exception {
 		new Expectations() {{
 			requestService.getRequestCommentByUUID("123");
@@ -61,7 +73,7 @@ public final class StandaloneJMockitTest {
 				.andExpect(view().name("comment"));
 	}
 
-	@Test
+	//	@Test
 	public void saveComment() throws Exception {
 		new Expectations() {{
 			requestService.getRequestCommentByUUID("123");

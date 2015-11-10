@@ -1,23 +1,34 @@
 package mockmvc.example;
 
-import org.junit.*;
-import org.junit.runner.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyObject;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.context.annotation.*;
-import org.springframework.test.context.*;
-import org.springframework.test.context.junit4.*;
-import org.springframework.test.context.web.*;
-import org.springframework.test.web.servlet.*;
-import org.springframework.test.web.servlet.setup.*;
-import org.springframework.validation.*;
-import org.springframework.web.context.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.Errors;
+import org.springframework.web.context.WebApplicationContext;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import global.Log;
 
 /**
  * The same tests as in {@link StandaloneMockitoTest}, but creating the {@link MockMvc} object with a call to
@@ -41,11 +52,13 @@ public final class WebAppContextMockitoTest {
 	static class WebAppConfig {
 		@Bean
 		RequestService requestService() {
+			Log.append("@rs ");
 			return mock(RequestService.class);
 		}
 
 		@Bean
 		CommentValidator validator() {
+			Log.append("@cv ");
 			return mock(CommentValidator.class);
 		}
 	}
@@ -59,6 +72,11 @@ public final class WebAppContextMockitoTest {
 	@Autowired
 	WebApplicationContext context;
 	MockMvc mockMvc;
+
+	@BeforeClass
+	public static  void setupLog() {
+		Log.init("WebAppContextMockitoTest");
+	}
 
 	@Before
 	public void setup() {
@@ -75,9 +93,10 @@ public final class WebAppContextMockitoTest {
 		mockMvc.perform(post("/comment/{uuid}", "123"))
 				.andExpect(status().isFound())
 				.andExpect(view().name("redirect:/dashboard"));
+		Log.log();
 	}
 
-	@Test
+	//	@Test
 	public void saveCommentWhenThereIsAFormError() throws Exception {
 		when(requestService.getRequestCommentByUUID("123")).thenReturn(new RequestComment());
 
@@ -95,7 +114,7 @@ public final class WebAppContextMockitoTest {
 				.andExpect(view().name("comment"));
 	}
 
-	@Test
+	//	@Test
 	public void saveComment() throws Exception {
 		when(requestService.getRequestCommentByUUID("123")).thenReturn(new RequestComment());
 

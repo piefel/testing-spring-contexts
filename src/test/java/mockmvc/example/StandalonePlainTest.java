@@ -5,10 +5,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import global.Log;
 import mockit.Deencapsulation;
 
 public final class StandalonePlainTest {
@@ -16,6 +18,11 @@ public final class StandalonePlainTest {
 	CommentValidator validator;
 	CommentController commentController;
 	MockMvc mockMvc;
+
+	@BeforeClass
+	public static  void setupLog() {
+		Log.init("StandaloneMockitoTest");
+	}
 
 	@Before
 	public void setup() {
@@ -40,16 +47,17 @@ public final class StandalonePlainTest {
 		mockMvc.perform(post("/comment/{uuid}", "123"))
 				.andExpect(status().isFound())
 				.andExpect(view().name("redirect:/dashboard"));
+		Log.log();
 	}
 
-//	@Test
+	//	@Test
 	public void saveCommentWhenThereIsAFormError() throws Exception {
 		mockMvc.perform(post("/comment/{uuid}", "123"))
 				.andExpect(status().isOk())
 				.andExpect(view().name("comment"));
 	}
 
-//	@Test
+	//	@Test
 	public void saveComment() throws Exception {
 		mockMvc.perform(post("/comment/{uuid}", "123"))
 				.andExpect(status().isOk())

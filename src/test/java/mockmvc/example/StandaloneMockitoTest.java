@@ -1,17 +1,26 @@
 package mockmvc.example;
 
-import org.junit.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyObject;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import org.mockito.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
-import org.springframework.test.web.servlet.*;
-import org.springframework.test.web.servlet.setup.*;
-import org.springframework.validation.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.Errors;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import global.Log;
 
 public final class StandaloneMockitoTest {
 	@Mock
@@ -21,6 +30,11 @@ public final class StandaloneMockitoTest {
 	@InjectMocks
 	CommentController commentController;
 	MockMvc mockMvc;
+
+	@BeforeClass
+	public static  void setupLog() {
+		Log.init("StandaloneMockitoTest");
+	}
 
 	@Before
 	public void setup() {
@@ -36,9 +50,10 @@ public final class StandaloneMockitoTest {
 		mockMvc.perform(post("/comment/{uuid}", "123"))
 				.andExpect(status().isFound())
 				.andExpect(view().name("redirect:/dashboard"));
+		Log.log();
 	}
 
-	@Test
+	//	@Test
 	public void saveCommentWhenThereIsAFormError() throws Exception {
 		when(requestService.getRequestCommentByUUID("123")).thenReturn(new RequestComment());
 
@@ -56,7 +71,7 @@ public final class StandaloneMockitoTest {
 				.andExpect(view().name("comment"));
 	}
 
-	@Test
+	//	@Test
 	public void saveComment() throws Exception {
 		when(requestService.getRequestCommentByUUID("123")).thenReturn(new RequestComment());
 

@@ -1,22 +1,29 @@
 package mockmvc.example;
 
-import org.junit.*;
-import org.junit.runner.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import mockit.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.Errors;
+import org.springframework.web.context.WebApplicationContext;
 
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.context.annotation.*;
-import org.springframework.test.context.*;
-import org.springframework.test.context.junit4.*;
-import org.springframework.test.context.web.*;
-import org.springframework.test.web.servlet.*;
-import org.springframework.test.web.servlet.setup.*;
-import org.springframework.validation.*;
-import org.springframework.web.context.*;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import global.Log;
+import mockit.Capturing;
+import mockit.Delegate;
+import mockit.Expectations;
 
 /**
  * The same tests as in {@link StandaloneJMockitTest}, but creating the {@link MockMvc} object with a call to
@@ -30,6 +37,7 @@ public final class WebAppContextJMockitTest {
 	static class WebAppConfig {
 		@Bean
 		RequestService requestService() {
+			Log.append("@rs ");
 			return new RequestService() {
 				@Override
 				public RequestComment getRequestCommentByUUID(String uuid) {
@@ -40,6 +48,7 @@ public final class WebAppContextJMockitTest {
 
 		@Bean
 		CommentValidator validator() {
+			Log.append("@cv ");
 			return new CommentValidator();
 		}
 	}
@@ -53,6 +62,11 @@ public final class WebAppContextJMockitTest {
 	@Autowired
 	WebApplicationContext context;
 	MockMvc mockMvc;
+
+	@BeforeClass
+	public static  void setupLog() {
+		Log.init("WebAppContextJMockitTest");
+	}
 
 	@Before
 	public void setup() {
@@ -74,9 +88,10 @@ public final class WebAppContextJMockitTest {
 		mockMvc.perform(post("/comment/{uuid}", "123"))
 				.andExpect(status().isFound())
 				.andExpect(view().name("redirect:/dashboard"));
+		Log.log();
 	}
 
-	@Test
+	//	@Test
 	public void saveCommentWhenThereIsAFormError() throws Exception {
 		new Expectations() {{
 			requestService.getRequestCommentByUUID("123");
@@ -96,7 +111,7 @@ public final class WebAppContextJMockitTest {
 				.andExpect(view().name("comment"));
 	}
 
-	@Test
+	//	@Test
 	public void saveComment() throws Exception {
 		new Expectations() {{
 			requestService.getRequestCommentByUUID("123");

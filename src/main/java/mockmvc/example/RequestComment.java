@@ -1,5 +1,4 @@
 package mockmvc.example;
 
-public final class RequestComment
-{
+public final class RequestComment {
 }

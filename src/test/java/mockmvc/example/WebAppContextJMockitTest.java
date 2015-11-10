@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.*;
 import org.springframework.test.web.servlet.setup.*;
 import org.springframework.validation.*;
 import org.springframework.web.context.*;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -24,72 +25,86 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration @ContextConfiguration
-public final class WebAppContextJMockitTest
-{
-   @Configuration @ComponentScan
-   static class WebAppConfig
-   {
-      @Bean
-      RequestService requestService() {
-         return new RequestService() {
-            @Override
-            public RequestComment getRequestCommentByUUID(String uuid) { return null; }
-         };
-      }
+public final class WebAppContextJMockitTest {
+	@Configuration @ComponentScan
+	static class WebAppConfig {
+		@Bean
+		RequestService requestService() {
+			return new RequestService() {
+				@Override
+				public RequestComment getRequestCommentByUUID(String uuid) {
+					return null;
+				}
+			};
+		}
 
-      @Bean CommentValidator validator() { return new CommentValidator(); }
-   }
+		@Bean
+		CommentValidator validator() {
+			return new CommentValidator();
+		}
+	}
 
-   // These two fields provide access to the beans created in the configuration, as mocked instances.
-   @Capturing RequestService requestService;
-   @Capturing CommentValidator validator;
+	// These two fields provide access to the beans created in the configuration, as mocked instances.
+	@Capturing
+	RequestService requestService;
+	@Capturing
+	CommentValidator validator;
 
-   @Autowired WebApplicationContext context;
-   MockMvc mockMvc;
+	@Autowired
+	WebApplicationContext context;
+	MockMvc mockMvc;
 
-   @Before
-   public void setup()
-   {
-      mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+	@Before
+	public void setup() {
+		mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
 
-      new Expectations() {{ validator.supports((Class<?>) any); result = true; }};
-   }
+		new Expectations() {{
+			validator.supports((Class<?>) any);
+			result = true;
+		}};
+	}
 
-   @Test
-   public void saveCommentWhenRequestCommentIsNotFound() throws Exception
-   {
-      new Expectations() {{ requestService.getRequestCommentByUUID("123"); result = null; }};
+	@Test
+	public void saveCommentWhenRequestCommentIsNotFound() throws Exception {
+		new Expectations() {{
+			requestService.getRequestCommentByUUID("123");
+			result = null;
+		}};
 
-      mockMvc.perform(post("/comment/{uuid}", "123"))
-         .andExpect(status().isFound())
-         .andExpect(view().name("redirect:/dashboard"));
-   }
+		mockMvc.perform(post("/comment/{uuid}", "123"))
+				.andExpect(status().isFound())
+				.andExpect(view().name("redirect:/dashboard"));
+	}
 
-   @Test
-   public void saveCommentWhenThereIsAFormError() throws Exception
-   {
-      new Expectations() {{
-         requestService.getRequestCommentByUUID("123"); result = new RequestComment();
+	@Test
+	public void saveCommentWhenThereIsAFormError() throws Exception {
+		new Expectations() {{
+			requestService.getRequestCommentByUUID("123");
+			result = new RequestComment();
 
-         validator.validate(any, (Errors) any);
-         result = new Delegate() {
-            @SuppressWarnings("unused")
-            void validate(Object target, Errors errors) { errors.reject("forcing some error"); }
-         };
-      }};
+			validator.validate(any, (Errors) any);
+			result = new Delegate() {
+				@SuppressWarnings("unused")
+				void validate(Object target, Errors errors) {
+					errors.reject("forcing some error");
+				}
+			};
+		}};
 
-      mockMvc.perform(post("/comment/{uuid}", "123"))
-         .andExpect(status().isOk())
-         .andExpect(view().name("comment"));
-   }
+		mockMvc.perform(post("/comment/{uuid}", "123"))
+				.andExpect(status().isOk())
+				.andExpect(view().name("comment"));
+	}
 
-   @Test
-   public void saveComment() throws Exception
-   {
-      new Expectations() {{ requestService.getRequestCommentByUUID("123"); result = new RequestComment(); }};
+	@Test
+	public void saveComment() throws Exception {
+		new Expectations() {{
+			requestService.getRequestCommentByUUID("123");
+			result = new RequestComment();
+		}};
 
-      mockMvc.perform(post("/comment/{uuid}", "123"))
-         .andExpect(status().isOk())
-         .andExpect(view().name("ok"));
-   }
+		mockMvc.perform(post("/comment/{uuid}", "123"))
+				.andExpect(status().isOk())
+				.andExpect(view().name("ok"));
+	}
 }

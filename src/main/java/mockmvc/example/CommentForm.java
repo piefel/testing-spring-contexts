@@ -1,5 +1,4 @@
 package mockmvc.example;
 
-public final class CommentForm
-{
+public final class CommentForm {
 }

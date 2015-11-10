@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.*;
 import org.springframework.test.web.servlet.setup.*;
 import org.springframework.validation.*;
 import org.springframework.web.context.*;
+
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -35,67 +36,71 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration @ContextConfiguration
-public final class WebAppContextMockitoTest
-{
-   @Configuration @ComponentScan
-   static class WebAppConfig
-   {
-      @Bean RequestService requestService() { return mock(RequestService.class); }
-      @Bean CommentValidator validator() { return mock(CommentValidator.class); }
-   }
+public final class WebAppContextMockitoTest {
+	@Configuration @ComponentScan
+	static class WebAppConfig {
+		@Bean
+		RequestService requestService() {
+			return mock(RequestService.class);
+		}
 
-   // These two fields provide access to the mock beans created in the configuration.
-   @Autowired RequestService requestService;
-   @Autowired CommentValidator validator;
+		@Bean
+		CommentValidator validator() {
+			return mock(CommentValidator.class);
+		}
+	}
 
-   @Autowired WebApplicationContext context;
-   MockMvc mockMvc;
+	// These two fields provide access to the mock beans created in the configuration.
+	@Autowired
+	RequestService requestService;
+	@Autowired
+	CommentValidator validator;
 
-   @Before
-   public void setup()
-   {
-      mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+	@Autowired
+	WebApplicationContext context;
+	MockMvc mockMvc;
 
-      reset(requestService, validator); // without this call, the last test fails
-      when(validator.supports(any(Class.class))).thenReturn(true);
-   }
+	@Before
+	public void setup() {
+		mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
 
-   @Test
-   public void saveCommentWhenRequestCommentIsNotFound() throws Exception
-   {
-      when(requestService.getRequestCommentByUUID("123")).thenReturn(null);
+		reset(requestService, validator); // without this call, the last test fails
+		when(validator.supports(any(Class.class))).thenReturn(true);
+	}
 
-      mockMvc.perform(post("/comment/{uuid}", "123"))
-         .andExpect(status().isFound())
-         .andExpect(view().name("redirect:/dashboard"));
-   }
+	@Test
+	public void saveCommentWhenRequestCommentIsNotFound() throws Exception {
+		when(requestService.getRequestCommentByUUID("123")).thenReturn(null);
 
-   @Test
-   public void saveCommentWhenThereIsAFormError() throws Exception
-   {
-      when(requestService.getRequestCommentByUUID("123")).thenReturn(new RequestComment());
+		mockMvc.perform(post("/comment/{uuid}", "123"))
+				.andExpect(status().isFound())
+				.andExpect(view().name("redirect:/dashboard"));
+	}
 
-      doAnswer(new Answer() {
-         @Override
-         public Object answer(InvocationOnMock invocation) {
-            Errors errors = (Errors) invocation.getArguments()[1];
-            errors.reject("forcing some error");
-            return null;
-         }
-      }).when(validator).validate(anyObject(), any(Errors.class));
+	@Test
+	public void saveCommentWhenThereIsAFormError() throws Exception {
+		when(requestService.getRequestCommentByUUID("123")).thenReturn(new RequestComment());
 
-      mockMvc.perform(post("/comment/{uuid}", "123"))
-         .andExpect(status().isOk())
-         .andExpect(view().name("comment"));
-   }
+		doAnswer(new Answer() {
+			@Override
+			public Object answer(InvocationOnMock invocation) {
+				Errors errors = (Errors) invocation.getArguments()[1];
+				errors.reject("forcing some error");
+				return null;
+			}
+		}).when(validator).validate(anyObject(), any(Errors.class));
 
-   @Test
-   public void saveComment() throws Exception
-   {
-      when(requestService.getRequestCommentByUUID("123")).thenReturn(new RequestComment());
+		mockMvc.perform(post("/comment/{uuid}", "123"))
+				.andExpect(status().isOk())
+				.andExpect(view().name("comment"));
+	}
 
-      mockMvc.perform(post("/comment/{uuid}", "123"))
-         .andExpect(status().isOk())
-         .andExpect(view().name("ok"));
-   }
+	@Test
+	public void saveComment() throws Exception {
+		when(requestService.getRequestCommentByUUID("123")).thenReturn(new RequestComment());
+
+		mockMvc.perform(post("/comment/{uuid}", "123"))
+				.andExpect(status().isOk())
+				.andExpect(view().name("ok"));
+	}
 }
